@@ -14,6 +14,7 @@ namespace SmartHarvestOrganTax
         private Pawn Pawn => (Pawn)parent;
         public CompAutoHarvestTracker() { }
 
+        //bug 不摘右边的和心脏
         #region 主入口
         public void EvaluateNow()
         {
@@ -37,7 +38,7 @@ namespace SmartHarvestOrganTax
                 .Where(p => p.def.defName == "Kidney" && MedicalRecipesUtility.IsCleanAndDroppable(Pawn, p))
                 .ToList();
             if (kidneys.Count != 2) return false;        // 少于 2 个就别下单
-            AddBill("HarvestOrganKidney", kidneys.First());
+            AddBill(kidneys.First());
             return true;
         }
 
@@ -47,7 +48,7 @@ namespace SmartHarvestOrganTax
                 .Where(p => p.def.defName == "Lung" && MedicalRecipesUtility.IsCleanAndDroppable(Pawn, p))
                 .ToList();
             if (lungs.Count != 2) return false;
-            AddBill("HarvestOrganLung", lungs.First());
+            AddBill(lungs.First());
             return true;
         }
 
@@ -56,16 +57,15 @@ namespace SmartHarvestOrganTax
             var liver = Pawn.health.hediffSet.GetNotMissingParts()
                 .FirstOrDefault(p => p.def.defName == "Liver" && MedicalRecipesUtility.IsCleanAndDroppable(Pawn, p));
             if (liver == null) return false;
-            AddBill("HarvestOrganLiver", liver);
+            AddBill(liver);
             return true;
         }
         #endregion
 
         #region 工具
-        private void AddBill(string recipeDefName, BodyPartRecord part)
+        private void AddBill(BodyPartRecord part)
         {
-            var recipe = DefDatabase<RecipeDef>.GetNamed(recipeDefName);
-            var bill = new Bill_Medical(recipe, null) { Part = part };
+            var bill = new Bill_Medical(RecipeDefOf.RemoveBodyPart, null) { Part = part };
             // 插到队列顶端，确保顺序
             Pawn.BillStack.AddBill(bill);
             Pawn.BillStack.Reorder(bill, 0);

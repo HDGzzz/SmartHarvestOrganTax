@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+<DesignatorDef>
+  <defName>AutoHarvestOrgans</defName>
+  <texturePath>HarvestOrgans</texturePath>
+  <targetType>Thing</targetType>
+</DesignatorDef>
+</Defs>

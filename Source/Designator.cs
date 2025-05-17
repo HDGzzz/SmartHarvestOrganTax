@@ -10,14 +10,14 @@ namespace SmartHarvestOrganTax
         {
             defaultLabel = "Auto-Harvest Organs";
             defaultDesc = "Drag over imprisoned pawns to schedule optimal organ harvesting.";
-            icon = ContentFinder<Texture2D>.Get("UI/Designators/HarvestOrgans");
+            icon = ContentFinder<Texture2D>.Get("HarvestOrgans");
             useMouseIcon = true;
             soundDragSustain = SoundDefOf.Designate_DragStandard;
         }
 
-        public override int DraggableDimensions => 2;               // 区域拖拽
+        public override int DraggableDimensions => 2;               
         public override bool DragDrawMeasurements => false;
-        protected override DesignationDef Designation => null;         // 不用游戏内的 Designation 系统
+        protected override DesignationDef Designation => null;         
 
         public override AcceptanceReport CanDesignateCell(IntVec3 c)
         {
@@ -38,6 +38,24 @@ namespace SmartHarvestOrganTax
             var tracker = p.TryGetComp<CompAutoHarvestTracker>();
             if (tracker != null) tracker.EvaluateNow();
         }
+
+        public override void DesignateSingleCell(IntVec3 c)
+        {
+            Map map = Find.CurrentMap;
+            if (map == null) return;
+
+            foreach (Thing thing in c.GetThingList(map))
+            {
+                Pawn pawn = thing as Pawn;
+                if (pawn != null && CanDesignateThing(pawn) == AcceptanceReport.WasAccepted)
+                {
+                    // 添加你自己的逻辑，比如打上一个自定义的设计ation标签等
+                    pawn.TryGetComp<CompAutoHarvestTracker>()?.EvaluateNow();
+                }
+            }
+        }
+
+
     }
 
 }

@@ -16,21 +16,13 @@ namespace SmartHarvestOrganTax
         }
     }
 
-    /// <summary>给 Recipe_Surgery.ApplyOnPawn 打后缀</summary>
-    [HarmonyPatch(typeof(Recipe_Surgery))]
-    [HarmonyPatch(nameof(Recipe_Surgery.ApplyOnPawn),
-        new Type[] {
-            typeof(Pawn),               // pawn
-            typeof(BodyPartRecord),     // part
-            typeof(Pawn),               // billDoer
-            typeof(List<Thing>),        // ingredients
-            typeof(Bill)                // bill
-        })]
-    internal static class Patch_RecipeSurgery_ApplyOnPawn
+    [HarmonyPatch(typeof(Recipe_RemoveBodyPart), "ApplyOnPawn")]
+    public static class Patch_RemoveBodyPart_ApplyOnPawn
     {
-        private static void Postfix(Pawn pawn)
+        public static void Postfix(Pawn pawn, BodyPartRecord part, Pawn billDoer)
         {
-            pawn.TryGetComp<CompAutoHarvestTracker>()?.EvaluateNow();
+            pawn?.TryGetComp<CompAutoHarvestTracker>()?.EvaluateNow();
         }
     }
+
 }
