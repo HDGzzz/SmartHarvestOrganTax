@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>SmartHarvestOrganTax</name>
+  <packageId>Yukina.SmartHarvestOrganTax</packageId>
+  <author>Yukina</author>
+  <supportedVersions>
+    <li>1.5</li>
+  </supportedVersions>
+  <description>
+    智能一键收过路肺
+  </description>
+</ModMetaData>
