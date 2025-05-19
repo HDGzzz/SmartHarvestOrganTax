@@ -14,10 +14,19 @@ namespace SmartHarvestOrganTax
             useMouseIcon = true;
             soundDragSustain = SoundDefOf.Designate_DragStandard;
         }
+        [DefOf]
+        public static class AutoHarvestOrgansDefOf
+        {
+            public static DesignationDef AutoHarvestOrgans;
+        }
 
         public override int DraggableDimensions => 2;               
         public override bool DragDrawMeasurements => false;
-        protected override DesignationDef Designation => null;         
+
+        protected override DesignationDef Designation
+        {
+            get { return AutoHarvestOrgansDefOf.AutoHarvestOrgans; }
+        }
 
         public override AcceptanceReport CanDesignateCell(IntVec3 c)
         {
@@ -34,9 +43,11 @@ namespace SmartHarvestOrganTax
 
         public override void DesignateThing(Thing t)
         {
-            Pawn p = (Pawn)t;
-            var tracker = p.TryGetComp<CompAutoHarvestTracker>();
-            if (tracker != null) tracker.EvaluateNow();
+            Pawn pawn = (Pawn)t;
+            Map.designationManager.AddDesignation(new Designation(pawn, Designation));
+
+            // 添加追踪组件并立即评估
+            AddTracking(pawn);
         }
 
         public override void DesignateSingleCell(IntVec3 c)
@@ -49,11 +60,28 @@ namespace SmartHarvestOrganTax
                 Pawn pawn = thing as Pawn;
                 if (pawn != null && CanDesignateThing(pawn) == AcceptanceReport.WasAccepted)
                 {
-                    // 添加你自己的逻辑，比如打上一个自定义的设计ation标签等
-                    pawn.TryGetComp<CompAutoHarvestTracker>()?.EvaluateNow();
+                    DesignateThing(thing);
                 }
             }
         }
+
+        public static void AddTracking(Pawn pawn)
+        {
+            if (pawn.TryGetComp<CompAutoHarvestTracker>() != null) return;
+
+            // 动态添加CompAutoHarvestTracker
+            var comp = new CompAutoHarvestTracker();
+            comp.parent = pawn;
+            comp.Initialize(new CompProperties_AutoHarvestTracker());
+            pawn.AllComps.Add(comp);
+
+            // 立即评估
+            comp.EvaluateNow();
+
+            Messages.Message($"Started auto-harvesting for {pawn.NameShortColored}",
+                pawn, MessageTypeDefOf.TaskCompletion);
+        }
+
 
 
     }

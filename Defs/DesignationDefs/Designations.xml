@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
-<DesignatorDef>
+<DesignationDef>
   <defName>AutoHarvestOrgans</defName>
   <texturePath>HarvestOrgans</texturePath>
   <targetType>Thing</targetType>
-</DesignatorDef>
+</DesignationDef>
 </Defs>
