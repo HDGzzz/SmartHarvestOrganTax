@@ -82,6 +82,29 @@ namespace SmartHarvestOrganTax
                 pawn, MessageTypeDefOf.TaskCompletion);
         }
 
+        public static void RemoveTracking(Pawn pawn)
+        {
+            if (pawn == null) return;
+            var map = pawn.Map;
+            if (map != null)
+            {
+                var designation = map.designationManager.DesignationOn(pawn, AutoHarvestOrgansDefOf.AutoHarvestOrgans);
+                if (designation != null)
+                {
+                    map.designationManager.RemoveDesignation(designation);
+                }
+            }
+            var comp = pawn.TryGetComp<CompAutoHarvestTracker>();
+            if (comp != null)
+            {
+                pawn.AllComps.Remove(comp);
+                Messages.Message(
+                    $"Stopped auto-harvesting for {pawn.NameShortColored}",
+                    pawn,
+                    MessageTypeDefOf.RejectInput);
+            }
+        }
+
 
 
     }

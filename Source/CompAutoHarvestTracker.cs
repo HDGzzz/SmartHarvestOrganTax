@@ -1,6 +1,7 @@
 ﻿using RimWorld;
-using Verse;
 using System.Linq;
+using System.Runtime;
+using Verse;
 
 namespace SmartHarvestOrganTax
 {
@@ -15,24 +16,40 @@ namespace SmartHarvestOrganTax
 
         public CompAutoHarvestTracker() { }
 
-        public bool isLeft = true;
+        private bool _disabled = false;
 
         #region 主入口
         public void EvaluateNow()
         {
-            if (!Pawn.Spawned || Pawn.Dead || !Pawn.IsPrisonerOfColony) return;
-            ClearInvalidBills();
-            if (Pawn.health.Dead) return; // 已经被摘死
-            if (!NeedMoreBills()) return; // 已排够
+            if ( Pawn.Dead || !Pawn.IsPrisonerOfColony)
+            {
+                _disabled = true; // 跳过后续 tick
+                Designator_AutoHarvestOrgans.RemoveTracking(Pawn);
+                return;
+            }
+            //ClearInvalidBills();
+            //if (Pawn.health.Dead) return; 
 
+            Pawn.playerSettings.medCare = AutoHarvestMod.settings.surgeryMedCare;
+            if (!NeedMoreBills()) return; // 有正在摘的了
+            _disabled = false;
             // 依次尝试：右肾→左肾→右肺→左肺→肝→心脏
-            if (TryQueueKidney(isLeft)) return; // 右肾(index=1)左肾(index=0)
-            if (TryQueueLung(isLeft)) return;   // 右肺(index=1)左肺(index=0)
+            if (TryQueueKidney(AutoHarvestMod.settings.isLeft)) return; // 右肾(index=1)左肾(index=0)
+            if (TryQueueLung(AutoHarvestMod.settings.isLeft)) return;   // 右肺(index=1)左肺(index=0)
             if (TryQueueLiver()) return;
             if (TryQueueHeart()) return; // 最后摘心脏
             QueueRest();//还没死就再走圈流程直接摘肺
         }
         #endregion
+
+        public override void CompTick()
+        {
+            if (parent.IsHashIntervalTick(50)) // 50 tick 检查一次
+            {
+                if (_disabled) return;
+                EvaluateNow();
+            }
+        }
 
         #region 器官决策
         private bool TryQueueKidney(bool isLeft)
@@ -133,8 +150,8 @@ namespace SmartHarvestOrganTax
 
         private void QueueRest()
         {
-            if (TryQueueKidney(isLeft)) return; // 右肾(index=1)左肾(index=0)
-            if (TryQueueLung(isLeft)) return;   // 右肺(index=1)左肺(index=0)
+            if (TryQueueKidney(AutoHarvestMod.settings.isLeft)) return; // 右肾(index=1)左肾(index=0)
+            if (TryQueueLung(AutoHarvestMod.settings.isLeft)) return;   // 右肺(index=1)左肺(index=0)
             if (TryQueueLiver()) return;
 
             //摘最后一个肺
@@ -165,17 +182,17 @@ namespace SmartHarvestOrganTax
             Pawn.BillStack.Reorder(bill, 0);
         }
 
-        private void ClearInvalidBills()
-        {
-            Pawn.BillStack.Bills.RemoveAll(b =>
-            {
-                if (!(b is Bill_Medical bm)) return false;
-                if (bm.recipe.Worker is Recipe_RemoveBodyPart && bm.Part != null)
-                    // 若该部位已不干净/已缺失则撤销
-                    return !Pawn.health.hediffSet.GetNotMissingParts().Contains(bm.Part);
-                return false;
-            });
-        }
+        //private void ClearInvalidBills()
+        //{
+        //    Pawn.BillStack.Bills.RemoveAll(b =>
+        //    {
+        //        if (!(b is Bill_Medical bm)) return false;
+        //        if (bm.recipe.Worker is Recipe_RemoveBodyPart && bm.Part != null)
+                    
+        //            return !Pawn.health.hediffSet.GetNotMissingParts().Contains(bm.Part);
+        //        return false;
+        //    });
+        //}
 
         private bool NeedMoreBills()
             => !Pawn.BillStack.Bills.Any(b => b.recipe.Worker is Recipe_RemoveBodyPart);

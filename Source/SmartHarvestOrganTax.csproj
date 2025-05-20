@@ -55,8 +55,12 @@
       <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoHarvestSettings .cs" />
     <Compile Include="CompAutoHarvestTracker.cs" />
     <Compile Include="Designator.cs" />
     <Compile Include="HarmonyPatch.cs" />

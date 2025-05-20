@@ -35,13 +35,7 @@ namespace SmartHarvestOrganTax
         {
             if (t is Pawn pawn)
             {
-                var comp = pawn.TryGetComp<CompAutoHarvestTracker>();
-                if (comp != null)
-                {
-                    pawn.AllComps.Remove(comp);
-                    Messages.Message($"Stopped auto-harvesting for {pawn.NameShortColored}",
-                        pawn, MessageTypeDefOf.RejectInput);
-                }
+                Designator_AutoHarvestOrgans.RemoveTracking(pawn);
             }
         }
     }
