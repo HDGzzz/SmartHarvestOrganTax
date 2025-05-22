@@ -9,22 +9,25 @@ using Verse;
 
 namespace SmartHarvestOrganTax
 {
-    public class AutoHarvestSettings : ModSettings
+    public class SmartHarvestOrganTaxSettings : ModSettings
     {
-        public bool isLeft = true;
+        public bool IsLeft = true;
+        public bool IsChangeMedCare = true;
+        public bool IsLiverFirst = true;
         public MedicalCareCategory surgeryMedCare = MedicalCareCategory.HerbalOrWorse;
+
         public override void ExposeData()
         {
-            Scribe_Values.Look(ref isLeft, "isLeft", true);
+            Scribe_Values.Look(ref IsLeft, "isLeft", true);
             Scribe_Values.Look(ref surgeryMedCare, "surgeryMedCare", MedicalCareCategory.HerbalOrWorse);
         }
     }
     public class AutoHarvestMod : Mod
     {
-        public static AutoHarvestSettings settings;
+        public static SmartHarvestOrganTaxSettings settings;
         public AutoHarvestMod(ModContentPack content) : base(content)
         {
-            settings = GetSettings<AutoHarvestSettings>();
+            settings = GetSettings<SmartHarvestOrganTaxSettings>();
         }
         public override string SettingsCategory() => "Smart Harvest Organ Tax";
         public override void DoSettingsWindowContents(Rect inRect)
@@ -34,9 +37,21 @@ namespace SmartHarvestOrganTax
 
             /* ------------ 勾选框：左优先 ------------- */
             list.CheckboxLabeled(
-                "Left Kidney First",
-                ref settings.isLeft,
-                "If checked, the left kidney will be harvested first.");
+                "SmartHarvestOrganTax_Setting_LeftFirst_Label".Translate(),
+                ref settings.IsLeft,
+                "SmartHarvestOrganTax_Setting_LeftFirst_Desc".Translate());
+            list.GapLine();
+
+            /* ------------ 勾选框：左优先 ------------- */
+            list.CheckboxLabeled(
+                "SmartHarvestOrganTax_Setting_IsLiverFirst_Label".Translate(),
+                ref settings.IsLiverFirst);
+            list.GapLine();
+
+            /* ------------ 勾选框：是否自动改变用药方案 ------------- */
+            list.CheckboxLabeled(
+                "SmartHarvestOrganTax_Setting_IsChangeMedCare_Label".Translate(),
+                ref settings.IsChangeMedCare);
             list.GapLine();
 
             /* ------------ 用药方案选择器（原生图标） --- */
@@ -65,7 +80,7 @@ namespace SmartHarvestOrganTax
             );
 
             // 绘制标签
-            Widgets.Label(labelRect, "用于手术的用药方案：");
+            Widgets.Label(labelRect, "SmartHarvestOrganTax_Setting_MedicalCareSetter_Label".Translate());
 
             // 绘制医疗选择器
             MedicalCareUtility.MedicalCareSetter(medCareRect, ref settings.surgeryMedCare);

@@ -35,7 +35,7 @@ namespace SmartHarvestOrganTax
         {
             if (t is Pawn pawn)
             {
-                Designator_AutoHarvestOrgans.RemoveTracking(pawn);
+                Designator_SmartHarvestOrganTax.RemoveTracking(pawn);
             }
         }
     }

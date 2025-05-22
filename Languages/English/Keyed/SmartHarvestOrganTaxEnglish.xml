@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <SmartHarvestOrganTax_Designator_Label>Harvest Organs</SmartHarvestOrganTax_Designator_Label>
+    <SmartHarvestOrganTax_Designator_Desc>Drag over imprisoned pawns to schedule optimal organ harvesting.</SmartHarvestOrganTax_Designator_Desc>
+    <SmartHarvestOrganTax_Setting_LeftFirst_Label>Left Organs First</SmartHarvestOrganTax_Setting_LeftFirst_Label>
+    <SmartHarvestOrganTax_Setting_IsLiverFirst_Label>Liver First</SmartHarvestOrganTax_Setting_IsLiverFirst_Label>
+    <SmartHarvestOrganTax_Setting_LeftFirst_Desc>If checked, the left Organs will be harvested first.</SmartHarvestOrganTax_Setting_LeftFirst_Desc>
+    <SmartHarvestOrganTax_Setting_IsChangeMedCare_Label>If checked, the medication restrictions will be automatically changed after selection</SmartHarvestOrganTax_Setting_IsChangeMedCare_Label>
+    <SmartHarvestOrganTax_Setting_MedicalCareSetter_Label>Medical restrictions for SmartHarvestOrganTax</SmartHarvestOrganTax_Setting_MedicalCareSetter_Label>
+
+</LanguageData>

@@ -1,4 +1,5 @@
 ﻿using RimWorld;
+using System;
 using System.Linq;
 using System.Runtime;
 using Verse;
@@ -24,27 +25,43 @@ namespace SmartHarvestOrganTax
             if ( Pawn.Dead || !Pawn.IsPrisonerOfColony)
             {
                 _disabled = true; // 跳过后续 tick
-                Designator_AutoHarvestOrgans.RemoveTracking(Pawn);
+                Designator_SmartHarvestOrganTax.RemoveTracking(Pawn);
                 return;
             }
             //ClearInvalidBills();
             //if (Pawn.health.Dead) return; 
+            if (AutoHarvestMod.settings.IsChangeMedCare)
+            {
+                Pawn.playerSettings.medCare = AutoHarvestMod.settings.surgeryMedCare;
 
-            Pawn.playerSettings.medCare = AutoHarvestMod.settings.surgeryMedCare;
+            }
+
             if (!NeedMoreBills()) return; // 有正在摘的了
             _disabled = false;
-            // 依次尝试：右肾→左肾→右肺→左肺→肝→心脏
-            if (TryQueueKidney(AutoHarvestMod.settings.isLeft)) return; // 右肾(index=1)左肾(index=0)
-            if (TryQueueLung(AutoHarvestMod.settings.isLeft)) return;   // 右肺(index=1)左肺(index=0)
-            if (TryQueueLiver()) return;
-            if (TryQueueHeart()) return; // 最后摘心脏
+            // 依次尝试：肾→肺→根据设置决定肝脏和心脏的优先级
+            if (TryQueueKidney(AutoHarvestMod.settings.IsLeft)) return; // 左肾(index=0)右肾(index=1)
+            if (TryQueueLung(AutoHarvestMod.settings.IsLeft)) return;   // 左肺(index=0)右肺(index=1)
+
+            // 根据设置决定肝脏和心脏的摘取顺序
+
+
+            //var (firstOrgan, secondOrgan) = AutoHarvestMod.settings.IsLiverFirst
+            //    ? ((Func<bool>)TryQueueLiver, (Func<bool>)TryQueueHeart)
+            //    : ((Func<bool>)TryQueueHeart, (Func<bool>)TryQueueLiver);
+
+            //if (firstOrgan()) return;
+            //if (secondOrgan()) return;
+
+            if (AutoHarvestMod.settings.IsLiverFirst ? TryQueueLiver() : TryQueueHeart()) return;
+            if (AutoHarvestMod.settings.IsLiverFirst ? TryQueueHeart() : TryQueueLiver()) return;
+
             QueueRest();//还没死就再走圈流程直接摘肺
         }
         #endregion
 
         public override void CompTick()
         {
-            if (parent.IsHashIntervalTick(50)) // 50 tick 检查一次
+            if (parent.IsHashIntervalTick(300)) // 300 tick 检查一次
             {
                 if (_disabled) return;
                 EvaluateNow();
@@ -52,23 +69,30 @@ namespace SmartHarvestOrganTax
         }
 
         #region 器官决策
-        private bool TryQueueKidney(bool isLeft)
+        private bool TryQueueKidney(bool isLeft, bool? ignoreRemainingCheck = null)
         {
-            var kidneysAll = Pawn.health.hediffSet.GetNotMissingParts().Where(p => p.def.defName == "Kidney").OrderBy(p => GetPartIndex(p)).ToList();
-            if (kidneysAll.Count < 2) return false; // 至少要有两个肾脏
+            var kidneysAll = Pawn.health.hediffSet.GetNotMissingParts()
+                .Where(p => p.def.defName == "Kidney")
+                .OrderBy(p => GetPartIndex(p))
+                .ToList();
 
-            var kidneyLeft = kidneysAll[0]; // 左肾index=0, 右肾index=1
-            var kidneyRight = kidneysAll[1];
-            BodyPartRecord kidney;
+            if (!(ignoreRemainingCheck ?? false) && kidneysAll.Count < 2)
+                return false; // 默认检查：至少要有两个肾脏
+
+            // 如果忽略检查或只剩一个肾，也允许继续尝试
+            var kidneyLeft = kidneysAll.FirstOrDefault();
+            var kidneyRight = kidneysAll.Skip(1).FirstOrDefault();
 
             BodyPartRecord first = isLeft ? kidneyLeft : kidneyRight;
             BodyPartRecord second = isLeft ? kidneyRight : kidneyLeft;
 
-            if (MedicalRecipesUtility.IsCleanAndDroppable(Pawn, first))
+            BodyPartRecord kidney = null;
+
+            if (first != null && MedicalRecipesUtility.IsCleanAndDroppable(Pawn, first))
             {
                 kidney = first;
             }
-            else if (MedicalRecipesUtility.IsCleanAndDroppable(Pawn, second))
+            else if (second != null && MedicalRecipesUtility.IsCleanAndDroppable(Pawn, second))
             {
                 kidney = second;
             }
@@ -77,27 +101,33 @@ namespace SmartHarvestOrganTax
                 return false;
             }
 
-
-            if (kidney == null) return false;
-
             AddBill(kidney);
             return true;
         }
 
-        private bool TryQueueLung(bool isLeft)
+        private bool TryQueueLung(bool isLeft, bool? ignoreRemainingCheck = null)
         {
-            var lungsAll = Pawn.health.hediffSet.GetNotMissingParts().Where(p => p.def.defName == "Lung").OrderBy(p => GetPartIndex(p)).ToList();
-            if (lungsAll.Count < 2) return false; // 至少要有两个肺
-            var lungLeft = lungsAll[0]; // 左肺index=0, 右肺index=1
-            var lungRight = lungsAll[1];
-            BodyPartRecord lung;
+            var lungsAll = Pawn.health.hediffSet.GetNotMissingParts()
+                .Where(p => p.def.defName == "Lung")
+                .OrderBy(p => GetPartIndex(p))
+                .ToList();
+
+            if (!(ignoreRemainingCheck ?? false) && lungsAll.Count < 2)
+                return false; // 默认要求两个肺
+
+            var lungLeft = lungsAll.FirstOrDefault();
+            var lungRight = lungsAll.Skip(1).FirstOrDefault();
+
             BodyPartRecord first = isLeft ? lungLeft : lungRight;
             BodyPartRecord second = isLeft ? lungRight : lungLeft;
-            if (MedicalRecipesUtility.IsCleanAndDroppable(Pawn, first))
+
+            BodyPartRecord lung = null;
+
+            if (first != null && MedicalRecipesUtility.IsCleanAndDroppable(Pawn, first))
             {
                 lung = first;
             }
-            else if (MedicalRecipesUtility.IsCleanAndDroppable(Pawn, second))
+            else if (second != null && MedicalRecipesUtility.IsCleanAndDroppable(Pawn, second))
             {
                 lung = second;
             }
@@ -105,7 +135,7 @@ namespace SmartHarvestOrganTax
             {
                 return false;
             }
-            if (lung == null) return false;
+
             AddBill(lung);
             return true;
         }
@@ -148,22 +178,40 @@ namespace SmartHarvestOrganTax
             return true;
         }
 
+        /// <summary>
+        /// 依次为 Pawn 排队摘除剩余高价值器官。  
+        /// 先尝试在“安全阈值”内摘肾、肺、肝；  
+        /// 若只剩 1 肾 + 1 肺且肝/心不可摘，则先排最后一只肺，随后继续排剩余肾，  
+        /// 以便在拥有「不死基因」的情况下继续榨取价值。
+        /// </summary>
         private void QueueRest()
         {
-            if (TryQueueKidney(AutoHarvestMod.settings.isLeft)) return; // 右肾(index=1)左肾(index=0)
-            if (TryQueueLung(AutoHarvestMod.settings.isLeft)) return;   // 右肺(index=1)左肺(index=0)
-            if (TryQueueLiver()) return;
+            // 1 先摘「多余」的肾（保证至少留 1 个）
+            if (TryQueueKidney(AutoHarvestMod.settings.IsLeft))
+                return;
 
-            //摘最后一个肺
-            var lungsAll = Pawn.health.hediffSet.GetNotMissingParts()
-                .Where(p => p.def.defName == "Liver"&&MedicalRecipesUtility.IsCleanAndDroppable(Pawn,p))
-                .OrderBy(p => GetPartIndex(p)).ToList();
-            if (lungsAll.Count < 0) return; // 至少要有一个肺
-            if (lungsAll[0] == null) return;
-            AddBill(lungsAll[0]);
+            // 2 再摘「多余」的肺（保证至少留 1 个）
+            if (TryQueueLung(AutoHarvestMod.settings.IsLeft))
+                return;
+
+            // 3 尝试摘肝
+            if (TryQueueLiver())
+                return;
+
+            // 4️⃣ 摘最后一只肺（忽略数量限制）
+            if(TryQueueLung(AutoHarvestMod.settings.IsLeft, true))
+                return;
+
+            // 5️⃣ 如果摘肺后 Pawn 还活着，继续尝试摘剩余肾
+            if(TryQueueKidney(AutoHarvestMod.settings.IsLeft, true))
+                return;
+
+            //6 到这能摘的都摘了,移除追踪组件
+            _disabled = true; // 跳过后续 tick
+            Designator_SmartHarvestOrganTax.RemoveTracking(Pawn);
             return;
-
         }
+
         #endregion
 
         #region 工具方法

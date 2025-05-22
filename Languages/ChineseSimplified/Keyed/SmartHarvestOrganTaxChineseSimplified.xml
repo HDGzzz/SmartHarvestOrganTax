@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <SmartHarvestOrganTax_Designator_Label>收过路肺</SmartHarvestOrganTax_Designator_Label>
+    <SmartHarvestOrganTax_Designator_Desc>拖动来框选要收过路肺的囚犯</SmartHarvestOrganTax_Designator_Desc>
+    <SmartHarvestOrganTax_Setting_LeftFirst_Label>优先左边器官</SmartHarvestOrganTax_Setting_LeftFirst_Label>
+    <SmartHarvestOrganTax_Setting_LeftFirst_Desc>如果选中,则优先摘取左边的器官(左肾,左肺),否则优先摘取右边的器官(右肾,右肺)</SmartHarvestOrganTax_Setting_LeftFirst_Desc>
+    <SmartHarvestOrganTax_Setting_IsLiverFirst_Label>优先摘肝</SmartHarvestOrganTax_Setting_IsLiverFirst_Label>
+    <SmartHarvestOrganTax_Setting_IsChangeMedCare_Label>如果选中,框选后会自动改变用药限制</SmartHarvestOrganTax_Setting_IsChangeMedCare_Label>
+    <SmartHarvestOrganTax_Setting_MedicalCareSetter_Label>收过路肺自动前调整为的医药限制:</SmartHarvestOrganTax_Setting_MedicalCareSetter_Label>
+
+</LanguageData>

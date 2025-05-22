@@ -4,7 +4,7 @@
   <Operation Class="PatchOperationAdd">
     <xpath>*/DesignationCategoryDef[defName = "Orders"]/specialDesignatorClasses</xpath>
     <value>
-      <li>SmartHarvestOrganTax.Designator_AutoHarvestOrgans</li>
+      <li>SmartHarvestOrganTax.Designator_SmartHarvestOrganTax</li>
     </value>
   </Operation>
 </Patch>

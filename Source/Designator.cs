@@ -4,20 +4,20 @@ using UnityEngine;
 
 namespace SmartHarvestOrganTax
 {
-    public class Designator_AutoHarvestOrgans : Designator
+    public class Designator_SmartHarvestOrganTax : Designator
     {
-        public Designator_AutoHarvestOrgans()
+        public Designator_SmartHarvestOrganTax()
         {
-            defaultLabel = "Auto-Harvest Organs";
-            defaultDesc = "Drag over imprisoned pawns to schedule optimal organ harvesting.";
+            defaultLabel = "SmartHarvestOrganTax_Designator_Label".Translate();
+            defaultDesc = "SmartHarvestOrganTax_Designator_Desc".Translate();
             icon = ContentFinder<Texture2D>.Get("HarvestOrgans");
             useMouseIcon = true;
-            soundDragSustain = SoundDefOf.Designate_DragStandard;
+            soundSucceeded = SoundDefOf.Designate_Haul;
         }
         [DefOf]
-        public static class AutoHarvestOrgansDefOf
+        public static class SmartHarvestOrganTaxDefOf
         {
-            public static DesignationDef AutoHarvestOrgans;
+            public static DesignationDef SmartHarvestOrganTax;
         }
 
         public override int DraggableDimensions => 2;               
@@ -25,7 +25,7 @@ namespace SmartHarvestOrganTax
 
         protected override DesignationDef Designation
         {
-            get { return AutoHarvestOrgansDefOf.AutoHarvestOrgans; }
+            get { return SmartHarvestOrganTaxDefOf.SmartHarvestOrganTax; }
         }
 
         public override AcceptanceReport CanDesignateCell(IntVec3 c)
@@ -78,8 +78,8 @@ namespace SmartHarvestOrganTax
             // 立即评估
             comp.EvaluateNow();
 
-            Messages.Message($"Started auto-harvesting for {pawn.NameShortColored}",
-                pawn, MessageTypeDefOf.TaskCompletion);
+            //Messages.Message($"Started auto-harvesting for {pawn.NameShortColored}",
+            //    pawn, MessageTypeDefOf.TaskCompletion);
         }
 
         public static void RemoveTracking(Pawn pawn)
@@ -88,7 +88,7 @@ namespace SmartHarvestOrganTax
             var map = pawn.Map;
             if (map != null)
             {
-                var designation = map.designationManager.DesignationOn(pawn, AutoHarvestOrgansDefOf.AutoHarvestOrgans);
+                var designation = map.designationManager.DesignationOn(pawn, SmartHarvestOrganTaxDefOf.SmartHarvestOrganTax);
                 if (designation != null)
                 {
                     map.designationManager.RemoveDesignation(designation);
@@ -98,10 +98,10 @@ namespace SmartHarvestOrganTax
             if (comp != null)
             {
                 pawn.AllComps.Remove(comp);
-                Messages.Message(
-                    $"Stopped auto-harvesting for {pawn.NameShortColored}",
-                    pawn,
-                    MessageTypeDefOf.RejectInput);
+                //Messages.Message(
+                //    $"Stopped auto-harvesting for {pawn.NameShortColored}",
+                //    pawn,
+                //    MessageTypeDefOf.RejectInput);
             }
         }
 
